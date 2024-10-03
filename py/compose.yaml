@@ -22,8 +22,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=${POSTGRES_DBNAME:-postgres}
       - POSTGRES_MAX_CONNECTIONS=${POSTGRES_MAX_CONNECTIONS:-1024}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     networks:
       - r2r-network
     ports:
@@ -37,8 +35,6 @@ services:
     command: >
       bash -c "
         if [ -z \"\$(ls -A /var/lib/postgresql/data)\" ]; then
-          echo \"Data directory is empty, initializing database...\"
-          echo \"max_connections = ${POSTGRES_MAX_CONNECTIONS:-1024}\" >> /var/lib/postgresql/data/postgresql.conf
           docker-entrypoint.sh postgres
         else
           echo \"Data directory is not empty, skipping initialization...\"

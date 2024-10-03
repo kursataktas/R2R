@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 import asyncpg
-from graspologic.partition import HierarchicalClusters
 
 from core.base import (
     CommunityReport,

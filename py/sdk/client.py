@@ -14,6 +14,7 @@ from .management import ManagementMethods
 from .models import R2RException
 from .retrieval import RetrievalMethods
 from .server import ServerMethods
+from .eval import EvalMethods
 
 nest_asyncio.apply()
 
@@ -94,7 +95,7 @@ class R2RAsyncClient:
         self._kg = KGMethods
         self._retrieval = RetrievalMethods
         self._server = ServerMethods
-
+        self._eval = EvalMethods
         # Collect all methods from the methods group
         self._methods = {}
         for collection in [
@@ -103,6 +104,7 @@ class R2RAsyncClient:
             self._management,
             self._kg,
             self._retrieval,
+            self._eval,
             self._server,
         ]:
             for name, method in inspect.getmembers(
