@@ -609,7 +609,7 @@ class PostgresKGProvider(KGProvider):
         self,
         graph: Any,
         leiden_params: Dict[str, Any],
-    ) -> HierarchicalClusters:
+    ) -> Any:
         """Compute Leiden communities."""
         try:
             from graspologic.partition import hierarchical_leiden
