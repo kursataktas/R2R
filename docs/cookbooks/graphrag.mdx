@@ -287,15 +287,8 @@ Now you can see that the graph is enriched with the following information. We ha
 
 ## Search
 
-GraphRAG currently supports two types of searches: `local` and `global`.
-
-
-### Local search
-
-Local searches are faster and cheaper than global.  A local knowledge graph search performs similarity search on the entity, relationship and community description embeddings.
-
 ```bash
-r2r search --query="Who is Aristotle?" --use-kg-search --kg-search-type=local
+r2r search --query="Who is Aristotle?" --use-kg-search
 ```
 
 The answer will be returned in JSON format and contains results from entities, relationships and communities. Following is a snippet of the output:
@@ -316,61 +309,22 @@ Vector search results:
 ]
 
 KG search results:
-{
-  'local_result': {
-    'query': 'Who is Aristotle?',
-    'entities': {'0': {'name': 'Aristotle', 'description': 'Aristotle was an ancient Greek philosopher and polymath, recognized as the father of various fields including logic, biology, and political science. He authored significant works such as the *Nicomachean Ethics* and *Politics*, where he explored concepts of virtue, governance, and the nature of reality, while also critiquing Platos ideas. His teachings and observations laid the groundwork for numerous disciplines, influencing thinkers ...'}},
-    'relationships': {},
-    'communities': {'0': {'summary': '```json\n{\n    "title": "Aristotle and His Contributions",\n    "summary": "The community revolves around Aristotle, an ancient Greek philosopher and polymath, who made significant contributions to various fields including logic, biology, political science, and economics. His works, such as 'Politics' and 'Nicomachean Ethics', have influenced numerous disciplines and thinkers from antiquity through the Middle Ages and beyond. The relationships between his various works and the fields he contributed to highlight his profound impact on Western thought.",\n    "rating": 9.5,\n    "rating_explanation": "The impact severity rating is high due to Aristotle's foundational influence on multiple disciplines and his enduring legacy in Western philosophy and science.",\n    "findings": [\n        {\n            "summary": "Aristotle's Foundational Role in Logic",\n            "explanation": "Aristotle is credited with the earliest study of formal logic, and his conception of it was the dominant form of Western logic until the 19th-century advances in mathematical logic. His works compiled into a set of six bo ...}}}}
-  },
-  'global_result': None
-}
+[
+  {
+    'method': 'local', 
+    'content': 
+      { 
+        'name': 'NICOMACHUS', 
+        'description': "Nicomachus was the father of the renowned philosopher Aristotle, who passed away during Aristotle's childhood, thereby influencing his early education and career. He served as the personal physician to King Amyntas of Macedon, establishing a connection to the royal family. Additionally, Aristotle named his son Nicomachus in honor of his father, further emphasizing the familial legacy.", 
+        'metadata': None
+      }, 
+      'result_type': 'entity', 
+      'extraction_ids': ['ed3899a1-70fc-58eb-ab28-a0ee74568b8d', 'bc5e26ac-12a7-50c6-9ee8-1ce101d645c2', '3637b7aa-8373-5329-9750-1efc366fa72e', '9df4f6fb-887f-545f-9e3a-f753c122f5cc', '56ebe711-645a-5975-90da-2d6461947d51', 'f6f5cfb6-8654-5e1c-b574-849a8a313452', 'ff8accdb-791e-5b6d-a83a-5adc32c4222c', 'fad10545-6557-576c-89a7-c4fce8d9381c'], 
+      'metadata': {'associated_query': 'Who is Aristotle?'}
+    }
+]
 Time taken: 2.39 seconds
 ```
-
-### Global search
-
-Global searches can be used for queries that require reasoning over the whole dataset. They provide more accurate results, however they use a large amount of queries and are expensive. We recommend checking the number of clusters created in the graph and setting the `max-llm-queries` to be a fraction (> 0.1) of that number.
-
-```bash
-r2r search --query="What were Aristotles key contributions to philosophy?" --use-kg-search --kg-search-type=global --max-llm-queries-for-global-search=100
-```
-
-Extracting the `global_result` from the payload that is returned above we find the following:
-
-```markdown
-
-### Aristotle's Key Contributions to Philosophy
-
-Aristotle, an ancient Greek philosopher and polymath, made foundational contributions to numerous fields, including philosophy, logic, biology, and political science. His works have had a lasting impact on Western thought and the development of modern science.
-
-#### Foundational Role in Various Fields
-
-Aristotle is recognized as the father of several disciplines. His significant works, such as the *Nicomachean Ethics* and *Politics*, explore concepts of virtue, governance, and the nature of reality. These texts are foundational in ethical theory and political science, examining the best ways to achieve a virtuous and potentially happy character [Data: Reports (2, 51, 52, 53, 54, 55, +more)].
-
-#### Contributions to Logic
-
-Aristotle is credited with the earliest study of formal logic, which remained the dominant form of Western logic until the 19th century. His works, compiled into a set of six books called the *Organon*, are foundational to the field of logic [Data: Reports (21, 22, 23, 24, 25, +more)].
-
-#### Influence on Medieval and Modern Thought
-
-Aristotle's influence extended well beyond his lifetime, impacting medieval scholars and modern thinkers alike. His works were translated into Arabic and studied by Muslim philosophers, contributing to the intellectual heritage of the Islamic Golden Age. In the Middle Ages, Aristotle's ideas were integrated into Christian theology and philosophy, shaping the scholastic tradition [Data: Reports (5)].
-
-#### Classification of the Rational Soul
-
-According to Aristotle's classification, humans possess the rational soul, which is unique to them. This rational soul is responsible for higher-order thinking and reasoning, distinguishing humans from other beings that may only possess vegetative or sensitive souls. The rational soul enables humans to engage in philosophical thought, ethical reasoning, and scientific inquiry [Data: Reports (3)].
-
-#### Exploration of Memory and Cognition
-
-Aristotle's exploration of memory in relation to sensation and perception laid the groundwork for understanding human cognition and perception. His methodological approach to studying memory and other cognitive processes involved systematic observation and logical analysis, influencing the scientific method and the way researchers study human cognition and behavior [Data: Reports (1, 2, 3, 4, 5)].
-
-#### Concept of Aether
-
-Aristotle proposed Aether as a divine substance within the framework of classical elements. It is associated with circular motion in the heavens and is seen as encompassing all classical elements. This concept highlights its central role in ancient philosophical thought and its influence on the conceptualization of the universe [Data: Reports (4)].
-
-#### Influence on Dante
-
-Dante Alighieri, the renowned Italian poet, referred to Aristotle as "the master of those who know," highlighting the profound respect and influence Aristotle had on his work. Dante's philosophy is deeply rooted in Aristotelian thought, particularly in the context of his *Comedy* [Data: Reports (3)].
 
 ### Conclusion
 
@@ -382,7 +336,7 @@ Aristotle's contributions to philosophy are vast and multifaceted, spanning ethi
 You can directly use these search results as part of your RAG pipeline.
 
 ```bash
-r2r rag --query="What are the key contributions of Aristotle to modern society?" --use-kg-search --kg-search-type=global --max-llm-queries-for-global-search=100
+r2r rag --query="What are the key contributions of Aristotle to modern society?" --use-kg-search
 ```
 
 The output is as follows:

@@ -626,10 +626,9 @@ r2r search --query="Who founded Airbnb?" --use-kg-search --kg-search-type=local
 ```python
 client.search("Who founded Airbnb?", kg_search_settings={
     "use_kg_search": True,
-    "kg_search_type": "global",
+    "kg_search_type": "local",
     "kg_search_level": 0, # level of community to search
     "max_community_description_length": 65536,
-    "max_llm_queries_for_global_search": 250,
     "local_search_limits": {
         "__Entity__": 20,
         "__Relationship__": 20,
@@ -643,10 +642,9 @@ client.search("Who founded Airbnb?", kg_search_settings={
 ```javascript
 await client.search("Who founded Airbnb?", true, {}, 10, false, {}, {
     useKgSearch: true,
-    kgSearchType: "global",
+    kgSearchType: "local",
     kgSearchLevel: "0",
     maxCommunityDescriptionLength: 65536,
-    maxLlmQueriesForGlobalSearch: 250,
     localSearchLimits: {
         __Entity__: 20,
         __Relationship__: 20,
@@ -664,10 +662,9 @@ curl -X POST http://localhost:7272/v2/search \
     "query": "Who founded Airbnb?",
     "kg_search_settings": {
       "use_kg_search": true,
-      "kg_search_type": "global",
+      "kg_search_type": "local",
       "kg_search_level": "0",
       "max_community_description_length": 65536,
-      "max_llm_queries_for_global_search": 250,
       "local_search_limits": {
         "__Entity__": 20,
         "__Relationship__": 20,
@@ -682,12 +679,11 @@ curl -X POST http://localhost:7272/v2/search \
 Key configurable parameters for knowledge graph search include:
 
 - `use_kg_search`: Enable knowledge graph search.
-- `kg_search_type`: Choose between "global" or "local" search.
+- `kg_search_type`: Choose between "local" search. "global" search is no longer supported.
 - `kg_search_level`: Specify the level of community to search.
 - `entity_types`: List of entity types to include in the search.
 - `relationships`: List of relationship types to include in the search.
 - `max_community_description_length`: Maximum length of community descriptions.
-- `max_llm_queries_for_global_search`: Limit on the number of LLM queries for global search.
 - `local_search_limits`: Set limits for different types of local searches.
 
 Knowledge graph search provides structured information about entities and their relationships, complementing the text-based search results and offering a more comprehensive understanding of the data.

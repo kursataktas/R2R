@@ -61,7 +61,7 @@ class KGSearchResultType(str, Enum):
 
 class KGSearchMethod(str, Enum):
     LOCAL = "local"
-    GLOBAL = "global"
+    # GLOBAL = "global" # no longer supported
 
 
 class KGEntityResult(R2RSerializable):
