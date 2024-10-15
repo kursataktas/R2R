@@ -802,6 +802,8 @@ class ManagementRouter(BaseRouter):
             auth_user=Depends(self.service.providers.auth.auth_wrapper),
         ) -> WrappedConversationResponse:
             result = await self.service.get_conversation(
-                conversation_id, branch_id, auth_user
+                auth_user.id,
+                conversation_id,
+                branch_id,
             )
             return result

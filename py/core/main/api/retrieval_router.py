@@ -282,6 +282,7 @@ class RetrievalRouter(BaseRouter):
                         str(conversation_id) if conversation_id else None
                     ),
                     branch_id=str(branch_id) if branch_id else None,
+                    user_id=auth_user.id,
                 )
 
                 if rag_generation_config.stream:

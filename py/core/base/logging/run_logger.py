@@ -133,7 +133,10 @@ class LocalRunLoggingProvider(RunLoggingProvider):
             """
             CREATE TABLE IF NOT EXISTS conversations (
                 id TEXT PRIMARY KEY,
-                created_at REAL
+                user_id TEXT,
+                created_at REAL,
+                updated_at REAL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
             );
 
             CREATE TABLE IF NOT EXISTS messages (
@@ -263,7 +266,7 @@ class LocalRunLoggingProvider(RunLoggingProvider):
             for row in rows
         ]
 
-    async def create_conversation(self) -> str:
+    async def create_conversation(self, user_id: UUID) -> str:
         if not self.conn:
             raise ValueError(
                 "Initialize the connection pool before attempting to log."
@@ -273,8 +276,8 @@ class LocalRunLoggingProvider(RunLoggingProvider):
         created_at = datetime.utcnow().timestamp()
 
         await self.conn.execute(
-            "INSERT INTO conversations (id, created_at) VALUES (?, ?)",
-            (conversation_id, created_at),
+            "INSERT INTO conversations (id, user_id, created_at, updated_at) VALUES (?, ?, ?, ?)",
+            (conversation_id, str(user_id), created_at, created_at),
         )
         await self.conn.commit()
         return conversation_id
@@ -304,6 +307,12 @@ class LocalRunLoggingProvider(RunLoggingProvider):
                 created_at,
                 json.dumps(metadata or {}),
             ),
+        )
+
+        # Update the conversation's updated_at timestamp
+        await self.conn.execute(
+            "UPDATE conversations SET updated_at = ? WHERE id = ?",
+            (created_at, conversation_id),
         )
 
         if parent_id is not None:
@@ -433,16 +442,36 @@ class LocalRunLoggingProvider(RunLoggingProvider):
             (message_id, new_message_id),
         )
 
+        await self.conn.execute(
+            "UPDATE conversations SET updated_at = ? WHERE id = (SELECT conversation_id FROM messages WHERE id = ?)",
+            (datetime.utcnow().timestamp(), message_id),
+        )
+
         await self.conn.commit()
         return new_message_id, new_branch_id
 
     async def get_conversation(
-        self, conversation_id: str, branch_id: Optional[str] = None
+        self,
+        user_id: UUID,
+        conversation_id: str,
+        branch_id: Optional[str] = None,
     ) -> Tuple[str, list[Message]]:
         if not self.conn:
             raise ValueError(
                 "Initialize the connection pool before attempting to log."
             )
+
+        query = "SELECT id FROM conversations WHERE id = ?"
+        params = [conversation_id]
+
+        if user_id is not None:
+            query += " AND user_id = ?"
+            params.append(str(user_id))
+
+        async with self.conn.execute(query, params) as cursor:
+            row = await cursor.fetchone()
+            if row is None:
+                raise ValueError(f"Conversation {conversation_id} not found")
 
         if branch_id is None:
             # Get the most recent branch by created_at timestamp
@@ -456,12 +485,12 @@ class LocalRunLoggingProvider(RunLoggingProvider):
                 (conversation_id,),
             ) as cursor:
                 row = await cursor.fetchone()
-                branch_id = row[0] if row else None
+                if row is None:
+                    raise ValueError(
+                        f"No branches found for conversation {conversation_id}"
+                    )
+                branch_id = row[0]
 
-        if branch_id is None:
-            return []  # No branches found for the conversation
-
-        # Get all messages for this branch
         async with self.conn.execute(
             """
             WITH RECURSIVE branch_messages(id, content, parent_id, depth, created_at) AS (
@@ -752,9 +781,9 @@ class RunLoggingSingleton:
             return await provider.get_logs(run_ids, limit_per_run)
 
     @classmethod
-    async def create_conversation(cls) -> str:
+    async def create_conversation(cls, user_id: UUID) -> str:
         async with cls.get_instance() as provider:
-            return await provider.create_conversation()
+            return await provider.create_conversation(user_id)
 
     @classmethod
     async def add_message(
@@ -778,10 +807,15 @@ class RunLoggingSingleton:
 
     @classmethod
     async def get_conversation(
-        cls, conversation_id: str, branch_id: Optional[str] = None
+        cls,
+        user_id: UUID,
+        conversation_id: str,
+        branch_id: Optional[str] = None,
     ) -> list[dict]:
         async with cls.get_instance() as provider:
-            return await provider.get_conversation(conversation_id, branch_id)
+            return await provider.get_conversation(
+                user_id, conversation_id, branch_id
+            )
 
     @classmethod
     async def list_branches(cls, conversation_id: str) -> list[dict]:

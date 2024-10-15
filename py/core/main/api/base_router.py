@@ -55,7 +55,6 @@ class BaseRouter:
                         results, outer_kwargs = func_result
                     else:
                         results, outer_kwargs = func_result, {}
-
                     if isinstance(results, StreamingResponse):
                         return results
                     return {"results": results, **outer_kwargs}

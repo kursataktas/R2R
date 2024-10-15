@@ -245,6 +245,7 @@ class RetrievalService(Service):
         branch_id: Optional[str] = None,
         message: Optional[Message] = None,
         messages: Optional[list[Message]] = None,
+        user_id: Optional[UUID] = None,
         *args,
         **kwargs,
     ):
@@ -276,7 +277,7 @@ class RetrievalService(Service):
                     if conversation_id:
                         conversation = (
                             await self.logging_connection.get_conversation(
-                                conversation_id, branch_id
+                                user_id, conversation_id, branch_id
                             )
                         )
                         messages = [conv[1] for conv in conversation] + [
@@ -285,13 +286,17 @@ class RetrievalService(Service):
                         ids = [conv[0] for conv in conversation]
                     else:
                         conversation_id = (
-                            await self.logging_connection.create_conversation()
+                            await self.logging_connection.create_conversation(
+                                user_id
+                            )
                         )
                         messages = [message]  # type: ignore
                 else:
                     if not conversation_id:
                         conversation_id = (
-                            await self.logging_connection.create_conversation()
+                            await self.logging_connection.create_conversation(
+                                user_id
+                            )
                         )
 
                         parent_id = None

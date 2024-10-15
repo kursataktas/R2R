@@ -658,10 +658,10 @@ class ManagementService(Service):
     @telemetry_event("GetConversation")
     async def get_conversation(
         self,
+        user_id: UUID,
         conversation_id: str,
         branch_id: Optional[str] = None,
-        auth_user=None,
     ) -> list[dict]:
         return await self.logging_connection.get_conversation(
-            conversation_id, branch_id
+            user_id, conversation_id, branch_id
         )

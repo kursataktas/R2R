@@ -48,7 +48,7 @@ def test_ingest_sample_file_2_sdk():
 
 
 def test_ingest_sample_file_3_sdk():
-    print("Testing: Ingest sample file SDK 2")
+    print("Testing: Ingest sample file SDK 3")
     file_paths = ["core/examples/data/lyft_2021.pdf"]
     ingest_response = client.ingest_files(file_paths=file_paths)
 
@@ -1610,7 +1610,6 @@ def test_error_handling():
 
 def test_conversation_history_sdk():
     print("Testing: Conversation history")
-
     # Start a conversation
     messages = [
         {"role": "user", "content": "Who was Aristotle?"},
